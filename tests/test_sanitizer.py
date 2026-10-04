@@ -2,7 +2,7 @@
 import time
 import unittest
 
-from txt_sanitizer import Sanitizer, sanitize
+from text_sanitizer_br import Sanitizer, sanitize
 
 
 class Masks(unittest.TestCase):

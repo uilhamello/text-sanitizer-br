@@ -1,4 +1,4 @@
-"""Optional person-name detection with spaCy. Install: pip install "txt-sanitizer[ner]".
+"""Optional person-name detection with spaCy. Install: pip install "text-sanitizer-br[ner]".
 
 Only person entities are masked. Location entities are ignored on purpose: the Portuguese models
 tag technical words as places ("Connection", "p95"); street addresses are covered by a regex.

@@ -1,4 +1,4 @@
-"""CLI: txt-sanitizer [--ner] [--max-chars N]. Text on stdin, sanitized text on stdout.
+"""CLI: text-sanitizer-br [--ner] [--max-chars N]. Text on stdin, sanitized text on stdout.
 
 The report (masks, blocked) goes to stderr. Exit codes: 0 ok · 2 blocked (stdout is empty).
 Offline: nothing leaves the machine.
@@ -14,9 +14,9 @@ from .sanitizer import Sanitizer
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(prog="txt-sanitizer", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(prog="text-sanitizer-br", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--version", action="version", version=__version__)
-    ap.add_argument("--ner", action="store_true", help='also mask person names (needs "txt-sanitizer[ner]")')
+    ap.add_argument("--ner", action="store_true", help='also mask person names (needs "text-sanitizer-br[ner]")')
     ap.add_argument("--max-chars", type=int, default=20000)
     args = ap.parse_args(argv)
 

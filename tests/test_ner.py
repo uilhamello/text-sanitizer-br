@@ -2,7 +2,7 @@
 import importlib.util
 import unittest
 
-from txt_sanitizer import Sanitizer
+from text_sanitizer_br import Sanitizer
 
 HAS_MODEL = importlib.util.find_spec("spacy") is not None and importlib.util.find_spec("pt_core_news_sm") is not None
 
@@ -19,7 +19,7 @@ class FailSecure(unittest.TestCase):
         self.assertTrue(report.ok)
 
 
-@unittest.skipUnless(HAS_MODEL, 'needs pip install "txt-sanitizer[ner]"')
+@unittest.skipUnless(HAS_MODEL, 'needs pip install "text-sanitizer-br[ner]"')
 class Names(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

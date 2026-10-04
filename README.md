@@ -1,6 +1,6 @@
-# txt-sanitizer
+# text-sanitizer-br
 
-[![test](https://github.com/uilhamello/txt-sanitizer/actions/workflows/test.yml/badge.svg)](https://github.com/uilhamello/txt-sanitizer/actions/workflows/test.yml)
+[![test](https://github.com/uilhamello/text-sanitizer-br/actions/workflows/test.yml/badge.svg)](https://github.com/uilhamello/text-sanitizer-br/actions/workflows/test.yml)
 
 **Mascara dados pessoais e segredos em texto livre, e bloqueia o que não dá para mascarar com
 segurança.** Feito para documentos brasileiros (CPF, CNPJ, RG, CEP, placa, telefone) e para o que
@@ -12,20 +12,20 @@ Não é um sanitizador de HTML (contra XSS). É mascaramento de PII.
 ## Instalação
 
 ```bash
-pip install "txt-sanitizer @ https://github.com/uilhamello/txt-sanitizer/archive/refs/tags/v0.1.0.zip"
+pip install "text-sanitizer-br @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.1.0.zip"
 ```
 
 Sem dependências. Para mascarar **nomes de pessoas**, instale o extra `ner` (spaCy + modelo
 `pt_core_news_sm` fixado por versão e hash; ~340 MB instalados, quase tudo spaCy e numpy):
 
 ```bash
-pip install "txt-sanitizer[ner] @ https://github.com/uilhamello/txt-sanitizer/archive/refs/tags/v0.1.0.zip"
+pip install "text-sanitizer-br[ner] @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.1.0.zip"
 ```
 
 ## Uso
 
 ```bash
-echo "João da Silva, CPF 123.456.789-09, Rua Augusta, 1500" | txt-sanitizer --ner
+echo "João da Silva, CPF 123.456.789-09, Rua Augusta, 1500" | text-sanitizer-br --ner
 # <PERSON>, CPF <CPF>, <ADDRESS>
 ```
 
@@ -33,7 +33,7 @@ O relatório (máscaras e bloqueios) vai para o stderr. Código de saída: `0` o
 (nesse caso nada é impresso no stdout).
 
 ```python
-from txt_sanitizer import Sanitizer, sanitize
+from text_sanitizer_br import Sanitizer, sanitize
 
 clean, report = sanitize("contato fulano@example.com")   # regras padrão, sem nomes
 report.ok          # False quando algo foi bloqueado: não use o texto
@@ -59,7 +59,7 @@ o texto com nomes não tem como perceber. Falhar é mais seguro.
 
 Mesmos 14 textos fictícios, Microsoft Presidio 2.2 com `pt_core_news_md`:
 
-| | Presidio | txt-sanitizer |
+| | Presidio | text-sanitizer-br |
 |---|---|---|
 | Nome de pessoa | ✅ | ✅ com `ner=True` |
 | Cartão, `Bearer`, CNPJ | vaza | ✅ |
@@ -82,7 +82,7 @@ todo pedido por aqui antes de enviar.
 ## Desenvolvimento
 
 ```bash
-git clone https://github.com/uilhamello/txt-sanitizer.git && cd txt-sanitizer
+git clone https://github.com/uilhamello/text-sanitizer-br.git && cd text-sanitizer-br
 PYTHONPATH=src python3 -m unittest discover -s tests -v
 ```
 
