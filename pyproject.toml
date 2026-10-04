@@ -24,6 +24,12 @@ ner = [
     "pt_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_sm-3.8.0/pt_core_news_sm-3.8.0-py3-none-any.whl#sha256=c304fa04db3af73cd08a250feacf560506e15a2ec2469bd1b09f06847f6b455c",
 ]
 
+# Plugin contract (read by jev-sanitizer and any other consumer): the entry point is a factory
+# called with max_chars, extra_masks, extra_blocks and ner, returning an object whose
+# sanitize(text) gives (clean_text, report) and report has .masks (dict) and .blocked (list).
+[project.entry-points.text_sanitizers]
+br = "text_sanitizer_br:Sanitizer"
+
 [project.scripts]
 text-sanitizer-br = "text_sanitizer_br.cli:main"
 

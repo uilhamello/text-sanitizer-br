@@ -1,5 +1,5 @@
 """text-sanitizer-br — masks PII and secrets in free text; blocks when something risky survives."""
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 from .sanitizer import DEFAULT_BLOCKS, DEFAULT_MASKS, Report, Sanitizer, sanitize  # noqa: E402
 

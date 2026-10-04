@@ -12,14 +12,14 @@ Não é um sanitizador de HTML (contra XSS). É mascaramento de PII.
 ## Instalação
 
 ```bash
-pip install "text-sanitizer-br @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.1.0.zip"
+pip install "text-sanitizer-br @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.1.1.zip"
 ```
 
 Sem dependências. Para mascarar **nomes de pessoas**, instale o extra `ner` (spaCy + modelo
 `pt_core_news_sm` fixado por versão e hash; ~340 MB instalados, quase tudo spaCy e numpy):
 
 ```bash
-pip install "text-sanitizer-br[ner] @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.1.0.zip"
+pip install "text-sanitizer-br[ner] @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.1.1.zip"
 ```
 
 ## Uso
@@ -73,6 +73,22 @@ Mesmos 14 textos fictícios, Microsoft Presidio 2.2 com `pt_core_news_md`:
 - Endereço exige logradouro **e** número. Cidade e bairro soltos passam.
 - Número de 6+ dígitos sem separador vira `<N>`. Escreva métricas como `51.000.000` ou `51M`.
 - Regex e NER não substituem minimização: não leve o dado pessoal se não precisar dele.
+
+## Como plugin
+
+O pacote se registra no grupo de entry points `text_sanitizers` com o nome `br`. Quem consome
+(como o jev-sanitizer) carrega por nome, sem importar o pacote diretamente:
+
+```python
+from importlib.metadata import entry_points
+
+factory = {ep.name: ep for ep in entry_points(group="text_sanitizers")}["br"].load()
+s = factory(max_chars=20000, extra_masks=[], extra_blocks=[], ner=False)
+clean, report = s.sanitize(texto)   # report.masks (dict), report.blocked (list)
+```
+
+Outro pacote (por exemplo, um `text-sanitizer-eu`) entra no mesmo grupo seguindo o mesmo
+contrato: uma fábrica que aceita `max_chars`, `extra_masks`, `extra_blocks` e `ner`.
 
 ## Quem usa
 
