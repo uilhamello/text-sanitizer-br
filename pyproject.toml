@@ -5,11 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "text-sanitizer-br"
 dynamic = ["version"]
-description = "Masks PII and secrets in free text (Brazilian documents included) and blocks what cannot be masked safely."
+description = "Brazilian region for text-sanitizer-core: masks PII (CPF, CNPJ, RG, CEP, names...) and secrets in free text."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
-dependencies = []
+# Engine and country-independent rules. Pinned to a tag; archive URL installs without git.
+dependencies = ["text-sanitizer-core @ https://github.com/uilhamello/text-sanitizer-core/archive/refs/tags/v0.1.0.zip"]
 keywords = ["pii", "lgpd", "sanitizer", "masking", "secrets", "redaction"]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -20,15 +21,13 @@ classifiers = [
 [project.optional-dependencies]
 # Person names. Model pinned by version and hash (spaCy models are not on PyPI).
 ner = [
-    "spacy>=3.8,<3.9",
+    "text-sanitizer-core[ner] @ https://github.com/uilhamello/text-sanitizer-core/archive/refs/tags/v0.1.0.zip",
     "pt_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_sm-3.8.0/pt_core_news_sm-3.8.0-py3-none-any.whl#sha256=c304fa04db3af73cd08a250feacf560506e15a2ec2469bd1b09f06847f6b455c",
 ]
 
-# Plugin contract (read by jev-sanitizer and any other consumer): the entry point is a factory
-# called with max_chars, extra_masks, extra_blocks and ner, returning an object whose
-# sanitize(text) gives (clean_text, report) and report has .masks (dict) and .blocked (list).
+# Region plugin for text-sanitizer-core (see text_sanitizer_core.plugins).
 [project.entry-points.text_sanitizers]
-br = "text_sanitizer_br:Sanitizer"
+br = "text_sanitizer_br:REGION"
 
 [project.scripts]
 text-sanitizer-br = "text_sanitizer_br.cli:main"

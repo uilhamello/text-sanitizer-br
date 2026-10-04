@@ -9,17 +9,22 @@ sai da máquina.
 
 Não é um sanitizador de HTML (contra XSS). É mascaramento de PII.
 
+É a **região Brasil** do [text-sanitizer-core](https://github.com/uilhamello/text-sanitizer-core):
+o core traz o motor e as regras que não dependem de país (segredos, e-mail, cartão, IP); este
+pacote acrescenta documentos, telefone, placa, endereço e o modelo de nomes em português. Instalar
+este pacote já traz o core.
+
 ## Instalação
 
 ```bash
-pip install "text-sanitizer-br @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.1.1.zip"
+pip install "text-sanitizer-br @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.2.0.zip"
 ```
 
 Sem dependências. Para mascarar **nomes de pessoas**, instale o extra `ner` (spaCy + modelo
 `pt_core_news_sm` fixado por versão e hash; ~340 MB instalados, quase tudo spaCy e numpy):
 
 ```bash
-pip install "text-sanitizer-br[ner] @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.1.1.zip"
+pip install "text-sanitizer-br[ner] @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.2.0.zip"
 ```
 
 ## Uso
@@ -74,21 +79,17 @@ Mesmos 14 textos fictícios, Microsoft Presidio 2.2 com `pt_core_news_md`:
 - Número de 6+ dígitos sem separador vira `<N>`. Escreva métricas como `51.000.000` ou `51M`.
 - Regex e NER não substituem minimização: não leve o dado pessoal se não precisar dele.
 
-## Como plugin
+## Como região do core
 
-O pacote se registra no grupo de entry points `text_sanitizers` com o nome `br`. Quem consome
-(como o jev-sanitizer) carrega por nome, sem importar o pacote diretamente:
+O pacote registra `REGION` no grupo de entry points `text_sanitizers` com o nome `br`. Para
+juntar várias regiões numa passada só, use o core:
 
 ```python
-from importlib.metadata import entry_points
+from text_sanitizer_core import build
 
-factory = {ep.name: ep for ep in entry_points(group="text_sanitizers")}["br"].load()
-s = factory(max_chars=20000, extra_masks=[], extra_blocks=[], ner=False)
-clean, report = s.sanitize(texto)   # report.masks (dict), report.blocked (list)
+s = build(["br"], ner=True)   # futuramente: build(["br", "eu"])
+clean, report = s.sanitize(texto)
 ```
-
-Outro pacote (por exemplo, um `text-sanitizer-eu`) entra no mesmo grupo seguindo o mesmo
-contrato: uma fábrica que aceita `max_chars`, `extra_masks`, `extra_blocks` e `ner`.
 
 ## Quem usa
 
