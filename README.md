@@ -17,14 +17,14 @@ este pacote já traz o core.
 ## Instalação
 
 ```bash
-pip install "text-sanitizer-br @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.2.0.zip"
+pip install "text-sanitizer-br @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.3.1.zip"
 ```
 
 Sem dependências. Para mascarar **nomes de pessoas**, instale o extra `ner` (spaCy + modelo
 `pt_core_news_sm` fixado por versão e hash; ~340 MB instalados, quase tudo spaCy e numpy):
 
 ```bash
-pip install "text-sanitizer-br[ner] @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.2.0.zip"
+pip install "text-sanitizer-br[ner] @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.3.1.zip"
 ```
 
 ## Uso
@@ -56,6 +56,7 @@ clean, report = s.sanitize(texto)
 | **Bloqueia** | chave AWS, chave de service account GCP, PEM, connection string, string de alta entropia, `@` residual, texto acima de `max_chars`, `ner=True` sem o modelo instalado |
 
 Regras próprias entram por `extra_masks` e `extra_blocks`. As padrão não podem ser removidas.
+As `extra_masks` rodam logo depois dos segredos e antes das outras regras: `TCK-4521` vira `<TICKET>`, não placa.
 
 **Por que `ner=True` sem modelo bloqueia em vez de seguir:** quem pediu nomes mascarados e recebe
 o texto com nomes não tem como perceber. Falhar é mais seguro.

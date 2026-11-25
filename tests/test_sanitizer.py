@@ -142,6 +142,13 @@ class Leaks(unittest.TestCase):
                 self.assertEqual(sanitize(text)[0], text)
 
 
+class ExtraMasks(unittest.TestCase):
+    def test_readme_example(self):
+        """The README example: a ticket shaped like an old plate (TCK-4521) must come out as <TICKET>."""
+        s = Sanitizer(extra_masks=[("ticket", r"\bTCK-\d+\b", "<TICKET>")])
+        self.assertEqual(s.sanitize("TCK-4521 aberto")[0], "<TICKET> aberto")
+
+
 class Blocks(unittest.TestCase):
     CASES = [
         ("aws AKIAABCDEFGHIJKLMNOP", "aws_key"),
