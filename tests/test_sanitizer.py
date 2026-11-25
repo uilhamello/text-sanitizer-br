@@ -16,7 +16,7 @@ class Masks(unittest.TestCase):
         ("origem 10.0.0.7 porta 6033", "<IP>", "10.0.0.7"),
         ("GET https://api.example.com/x?token=abc&id=9", "?<QUERY>", "token=abc"),
         ("senha=Hunter2 e password: 'x y'", "<SECRET>", "Hunter2"),
-        ("Authorization: Bearer abcDEF123456789xyz", "<TOKEN>", "abcDEF"),
+        ("Authorization: Bearer abcDEF123456789xyz", "<SECRET>", "abcDEF"),  # whole header since auth_header
         ("cookie SID=deadbeef1234", "<SECRET>", "deadbeef"),
         ("id_empresa=48213 e user_id: 77", "id_empresa=<N>", "48213"),
         ("req 3f2b8c1e-9a4d-4e6f-8b2a-1c3d5e7f9a0b", "<UUID>", "3f2b8c1e"),
@@ -54,6 +54,92 @@ class Masks(unittest.TestCase):
                 self.assertIn(expected, clean)
                 self.assertNotIn(leaked, clean)
                 self.assertTrue(report.ok, report.blocked)
+
+
+class Leaks(unittest.TestCase):
+    """Leaks found by the dry-run of 2026-10-15. All data is fictitious."""
+    CASES = [
+        ("CPF 123 456 789 09 inválido", "456 789"),
+        # Third pass: IDs and logins.
+        ("usuario: fulano.silva", "fulano"),
+        ("participante=4521", "4521"),
+        ("cod_usuario=4521", "4521"),
+        ("/usuarios/4521/editar", "4521"),
+        # Fourth pass: names, stores and addresses without the usual cues.
+        ('{"nome":"FULANO DE TAL"}', "FULANO"),
+        ("cliente Fulano reclamou", "Fulano"),
+        ("Att, Fulano", "Fulano"),
+        ("Atendente: Beltrana", "Beltrana"),
+        ("Concessionária: Auto Exemplo Veículos", "Exemplo"),
+        ("loja: Auto Exemplo Veículos", "Exemplo"),
+        ("Auto Exemplo ME", "Exemplo"),
+        ("| 312 | Auto Exemplo Veículos | SP |", "Exemplo"),
+        ("na Auto Exemplo Veículos", "Exemplo"),
+        ("Exemplo Brasil Comércio de Veículos", "Exemplo"),
+        ("R. das Flores, s/n", "Flores"),
+        ("endereço: Flores, 150 - Centro", "Flores"),
+        ("Rua 7 de Setembro, 150", "Setembro"),
+        ("logradouro: Rua das Flores", "Flores"),
+        # Greeting, line start and "Surname, <PERSON>" (needed no matter which name the model knows).
+        ("Prezado Fulano,", "Fulano"),
+        ("Oi Fulano, tudo bem", "Fulano"),
+        ("Beltrana ligou ontem", "Beltrana"),
+        # Second adversarial pass (documents).
+        ("CPF 111.444.777/35", "444.777"),
+        ("cpf=111.444.77735", "77735"),
+        ("CNPJ 11.222.333.0001-81", "0001"),
+        ("emitente 11.222.333.0001-81", "0001"),
+        ("tel +55 11 98765.4321", "98765"),
+        ("tel 98765-4321", "98765"),
+        ("ligar 98765-4321 amanhã", "98765"),
+        ("whats 11-98765-4321", "98765"),
+        ("placa ABC.1D23", "1D23"),
+        ("placa abc 1234", "abc 1234"),
+        ("CEP 01.310-100", "310-100"),
+        ("entrega em 01.310-100", "310-100"),
+        ("cartão final 1111 validade 12/29", "12/29"),
+        ("CNPJ 12 345 678 0001 95", "0001"),
+        ("RG 12 345 678 9", "345 678"),
+        ("CPF: 123-456-789-09", "456-789"),
+        ("CEP 01310 100", "01310"),
+        ("+55 11 9 8765-4321", "8765"),
+        ("CPF 123.456.789 09", "456.789"),
+        ("placa ABC 1D23 apreendida", "ABC 1D23"),
+        ("chassi 9BWZZZ377VT004251", "377VT"),
+        ("usuário 4521 e loja 312 no pedido 98765", "4521"),
+        ("usuário 4521 e loja 312 no pedido 98765", " 312"),
+        ("anunciante nº 4521", "4521"),
+        ("avaliação #20431 travada", "20431"),
+        ("a loja Auto Center Paulista reclamou", "Paulista"),
+        ("concessionária Horizonte Veículos ligou", "Horizonte"),
+        ("emitido por Veículos Horizonte Ltda", "Horizonte"),
+        ("Comercial Estrela S.A. pagou", "Estrela"),
+        ("o Rodrigo reclamou do boleto", "Rodrigo"),
+        ("Falei com a Patrícia ontem", "Patrícia"),
+        ("Sr. Rodrigo Almeida aguarda", "Almeida"),
+        ("contato fulano (arroba) example (ponto) com", "fulano"),
+    ]
+
+    def test_no_leak(self):
+        for text, leaked in self.CASES:
+            with self.subTest(text=text):
+                clean, report = sanitize(text)
+                self.assertNotIn(leaked, clean)
+                self.assertTrue(report.ok, report.blocked)
+
+    def test_false_positives_kept(self):
+        for text in ("o Redis caiu às 10:30", "em 2024 o deploy caiu 3 vezes", "a loja recebeu 3 lances",
+                     "loja virtual fora do ar", "erro 500 no pedido de compra", "a senha do usuário expirou",
+                     "a Cloudflare respondeu 520", "o deploy rodou na versão 5.6",
+                     "CPF inválido no cadastro", "placa não encontrada", "tel vazio", "cartão final 1111",
+                     "usuário: inválido", "login: não autorizado", "config.yaml por config.yml",
+                     "Lista de Veículos vazia", "API Busca Veículos", "Google Cloud Serviços", "DEPLOY ME AGORA",
+                     "endereço: inválido", "endereço: null", "Rua sem saída", "Att, equipe",
+                     '"name": "Cloud Run Service"', "Comércio de Veículos",
+                     "Olá Mundo!", "Hello World.", "Dear Sir,", "Bom dia Pessoal,", "Sentry avisou 3 vezes",
+                     "Oi, tudo bem?"):
+            with self.subTest(text=text):
+                self.assertEqual(sanitize(text)[0], text)
 
 
 class Blocks(unittest.TestCase):
@@ -94,7 +180,8 @@ class KeepsMetrics(unittest.TestCase):
                 self.assertEqual(sanitize(text)[0], text)
 
     def test_words_that_look_like_streets_untouched(self):
-        for text in ("a avaliação 2026 subiu", "rodando 3 réplicas", "estradas ruins", "via API 2"):
+        # "avaliação 2026" is now an id (id_word); "de" keeps the street-rule check without that ambiguity.
+        for text in ("a avaliação de 2026 subiu", "rodando 3 réplicas", "estradas ruins", "via API 2"):
             with self.subTest(text=text):
                 self.assertEqual(sanitize(text)[0], text)
 

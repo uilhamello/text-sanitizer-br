@@ -14,7 +14,7 @@ class FailSecure(unittest.TestCase):
         self.assertTrue(report.blocked and report.blocked[0].startswith("ner_unavailable"), report.blocked)
 
     def test_off_by_default(self):
-        clean, report = Sanitizer().sanitize("O cliente João da Silva Pereira ligou")
+        clean, report = Sanitizer().sanitize("Registro criado para João da Silva Pereira")
         self.assertIn("João", clean)
         self.assertTrue(report.ok)
 
@@ -44,7 +44,7 @@ class Names(unittest.TestCase):
     def test_technical_text_untouched(self):
         for text in ("p95 624 s; 51.000.000 rows; 2026-09-27",
                      "erro SQLSTATE[HY000] Connection timed out na Vendas Concluídas",
-                     "deploy do b2b-adm falhou no Cloud Run"):
+                     "deploy do api-pedidos falhou no Cloud Run"):
             with self.subTest(text=text):
                 self.assertEqual(self.s.sanitize(text)[0], text)
 

@@ -52,7 +52,7 @@ clean, report = s.sanitize(texto)
 
 | Ação | Alvo |
 |---|---|
-| **Mascara** | nome de pessoa (com `ner=True`), endereço (logradouro + número), e-mail, CPF, RG, CNPJ, CEP, cartão (Luhn), telefone BR, placa BR, IP, UUID, JWT, `Bearer`, tokens com prefixo conhecido, `senha=`/`token=` (também em JSON e texto corrido), credencial e query string em URL, hex longo, número de 6+ dígitos, `*_id=` |
+| **Mascara** | nome de pessoa (com `ner=True`), endereço (logradouro + número), e-mail, CPF, RG, CNPJ, CEP, cartão (Luhn), telefone BR, placa BR, IP, UUID, JWT, `Bearer`, tokens com prefixo conhecido, `senha=`/`token=` (também em JSON e texto corrido), credencial e query string em URL, hex longo, número de 6+ dígitos, `*_id=`, login (`login=`, `usuário:`, `@nome.sobrenome`) |
 | **Bloqueia** | chave AWS, chave de service account GCP, PEM, connection string, string de alta entropia, `@` residual, texto acima de `max_chars`, `ner=True` sem o modelo instalado |
 
 Regras próprias entram por `extra_masks` e `extra_blocks`. As padrão não podem ser removidas.
@@ -72,12 +72,50 @@ Mesmos 14 textos fictícios, Microsoft Presidio 2.2 com `pt_core_news_md`:
 | Tempo por texto | ~25 ms | ~0,06 ms (regex) · ~3 ms (com `ner`) |
 | Instalado | ~445 MB | ~0 · ~340 MB (com `ner`) |
 
+## Benchmark de vazamento (25/11/2026)
+
+Dois conjuntos de textos fictícios em [`benchmark/`](benchmark/), rodados com `ner=True`
+(spaCy 3.8, `pt_core_news_sm` 3.8.0):
+
+| Conjunto | O que mede | Resultado |
+|---|---|---|
+| `leak.py` · 139 casos | segredo, documento, e-mail, IP, nome, loja, endereço e ID escritos de formas variadas | **0 vazamentos** |
+| `fp.py` · 80 textos | log, SQL, stack trace e métrica sem dado pessoal, que deveriam passar intactos | **30 alterados** |
+
+Quase todos os 30 vêm do modelo de nomes, que marca termos técnicos como pessoa (`Lock wait`,
+`SQLSTATE`, chave de Jira). O texto continua legível, mas perde contexto. Os casos foram escritos
+por quem escreveu as regras: um conjunto de outra pessoa provavelmente acha vazamentos novos.
+
+```bash
+PYTHONPATH=../text-sanitizer-core/src:src python benchmark/leak.py
+PYTHONPATH=../text-sanitizer-core/src:src python benchmark/fp.py
+```
+
 ## Limites
 
 - Nome em minúsculas ou fora de frase pode escapar: o modelo depende de contexto.
 - Endereço exige logradouro **e** número. Cidade e bairro soltos passam.
 - Número de 6+ dígitos sem separador vira `<N>`. Escreva métricas como `51.000.000` ou `51M`.
 - Regex e NER não substituem minimização: não leve o dado pessoal se não precisar dele.
+- Nome de tabela, serviço, projeto de nuvem ou termo interno não é PII e passa. Para esconder, use
+  `extra_masks` com a sua lista: `Sanitizer(extra_masks=[("interno", r"\b(?:meu-projeto|tb_clientes)\b", "<INTERNO>")])`.
+- Nome solto com artigo ("o Fulano") só é pego antes de verbo de pessoa ("reclamou", "ligou"...)
+  ou depois de "falei com"; em outra posição depende do modelo.
+- Nome de loja é pego depois de "loja", "concessionária", "revenda", "empresa", "filial" ou "garagem"
+  (com ou sem dois-pontos), antes de Ltda/S.A./EIRELI/EPP/ME, em "X Comércio de Y" e quando duas ou
+  mais palavras com maiúscula terminam em Veículos, Automóveis, Motors, Multimarcas, Seminovos, Autos,
+  Imóveis, Distribuidora, Transportes ou Representações. Nome de loja sem nenhuma dessas pistas passa.
+- Nome de pessoa também é pego depois de papel com dois-pontos ("Atendente: X"), em campo JSON de
+  nome (`"nome"`, `"full_name"`...), em despedida no fim da linha ("Att, X") e antes de verbo de pessoa
+  ("cliente X reclamou"). Efeito colateral aceito: `nome: Cloud Run` também vira `<PERSON>`.
+- Endereço depois de "endereço:" ou "logradouro:" é mascarado até o fim da linha, mesmo sem número.
+- Saudação ("Prezado X,", "Oi X,") e nome no começo da linha antes de verbo de pessoa ("X ligou ontem")
+  também são pegos. Efeito colateral aceito: "Oi Redis," e "Redis ligou o alerta" viram `<PERSON>`.
+- Número curto vira `<ID>` só depois de palavra de entidade ("usuário 4521", "pedido nº 12",
+  "/usuarios/4521/") ou de chave de ID (`userId=`, `user_id`, `uid=`, `cod_cliente=`).
+- Login vira `<USER>` depois de "login", "usuário", "username" ou "author", em `@nome.sobrenome` e em
+  "by nome.sobrenome". Login solto, sem essas pistas, passa. Decorators de código (`@app.route`,
+  `@login_required`) ficam intactos.
 
 ## Como região do core
 
