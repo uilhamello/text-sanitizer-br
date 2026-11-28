@@ -119,6 +119,11 @@ class Leaks(unittest.TestCase):
         ("Falei com a Patrícia ontem", "Patrícia"),
         ("Sr. Rodrigo Almeida aguarda", "Almeida"),
         ("contato fulano (arroba) example (ponto) com", "fulano"),
+        ("RG MG-12.345.678", "12.345.678"),
+        ("agência 1234 conta 56789-0", "56789-0"),
+        ("agência: 1234-5 conta corrente 12345-6", "12345-6"),
+        ("fulano.silva @ example.com.br", "fulano.silva"),
+        ("renavam 12345678901 bytes", "12345678901"),
     ]
 
     def test_no_leak(self):
@@ -138,7 +143,7 @@ class Leaks(unittest.TestCase):
                      "endereço: inválido", "endereço: null", "Rua sem saída", "Att, equipe",
                      '"name": "Cloud Run Service"', "Comércio de Veículos",
                      "Olá Mundo!", "Hello World.", "Dear Sir,", "Bom dia Pessoal,", "Sentry avisou 3 vezes",
-                     "Oi, tudo bem?"):
+                     "Oi, tudo bem?", "Av. média de 150 ms", "o Cloud Run quer mais memória"):
             with self.subTest(text=text):
                 self.assertEqual(sanitize(text)[0], text)
 

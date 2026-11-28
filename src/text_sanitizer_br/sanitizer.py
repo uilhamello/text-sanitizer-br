@@ -34,6 +34,9 @@ def _doc_after_word(m) -> str:
 # Generic words (Serviços, Indústria) stay out: "Google Cloud Serviços" is a product, not a client.
 _BIZ_WORD = (r"Ve[ií]culos|Autom[oó]veis|Motors|Multimarcas|Seminovos|Autos|Im[oó]veis|Distribuidora|Transportes"
              r"|Representa[cç][oõ]es")
+# Products that "want" and "say" things like people do ("o Cloud Run quer mais memória").
+_NOT_PRODUCT = (r"(?!(?:Cloud|Google|Kubernetes|Docker|Redis|Jenkins|Git(?:Hub|Lab)?|Bitbucket|Pub|Lambda|Firebase"
+                r"|Postgres|MySQL|Mysql|Nginx|Apache|Chrome|Firefox|Windows|Linux|Android|Php|Laravel|Node)\b)")
 _EMPTY_PT = r"(?!(?:null|none|vazio|inv[aá]lid[oa]|n[aã]o|desconhecid[oa]|nenhum)\b)"
 _SIGN_OFF = r"att|atenciosamente|abs|abra[cç]os?|obrigad[oa]|grat[oa]|cumprimentos|regards|thanks"
 
@@ -44,14 +47,19 @@ _DOC_WORDS = r"cpf|cnpj|rg|cep|tel(?:efone)?|cel(?:ular)?|fone|whats(?:app)?|zap
 
 MASKS: list[tuple] = [
     # Any separator after a document word: the word says what it is, so the layout does not matter.
-    ("doc_word", r"(?i)\b(?P<k>(?P<d>" + _DOC_WORDS + r")\s*(?:n[º°o]\.?)?\s*[:=]?\s*)(?P<v>\+?\(?\d[\d .\-/()]{5,22}\d)",
+    ("doc_word", r"(?i)\b(?P<k>(?P<d>" + _DOC_WORDS + r")\s*(?:n[º°o]\.?)?\s*[:=]?\s*)(?P<v>(?:[A-Z]{2}-)?\+?\(?\d[\d .\-/()]{5,22}\d)",
      _doc_after_word),
+    # Bank account: agency with 4 digits, account with its check digit ("agência 1234 conta 56789-0").
+    ("bank_account", r"(?i)\b(?P<k>(?:ag[eê]ncia|ag\.)\s*(?:n[º°o]\.?)?\s*[:=]?\s*)\d{4}(?:-[\dxX])?\b", r"\g<k><BANK>"),
+    ("bank_account_cc", r"(?i)\b(?P<k>(?:conta(?:\s+corrente|\s+poupan[cç]a)?|c/c|cc)\s*(?:n[º°o]\.?)?\s*[:=]?\s*)"
+                        r"\d{3,12}-[\dxX]\b", r"\g<k><BANK>"),
     ("plate_word", r"(?i)\b(?P<k>placa\s*[:=]?\s*)[A-Z]{3}[\s.\-]?\d[A-Z0-9]\d{2}\b", r"\g<k><PLATE>"),
     # Value after an address key ("endereço: Flores, 150 - Centro"): the key says it is an address.
     ("address_key", r"(?i)\b(?P<k>endere[cç]o|logradouro)(?P<sep>\s*:\s*)" + _EMPTY_PT + r"(?!\d{1,3}(?:\.\d{1,3}){3})[^\s\"|;][^\n\"|;]{2,80}",
      r"\g<k>\g<sep><ADDRESS>"),
     # Street address: a street word, a name, a number and optional unit ("Rua X, 150, apto 42").
     ("address_br", r"(?i)\b(?:rua|r\.|avenida|av\.?|travessa|tv\.|alameda|rodovia|rod\.|estrada|praça|pça\.?)\s+"
+                   r"(?!(?:m[eé]dia|average|avg)\b)"  # "Av. média de 150 ms" is an average
                    r"(?:\d{1,2}\s+de\s+)?[^\d,;\n<>]{2,60}?,?\s*(?:n[º°o]?\.?\s*)?(?:\d{1,5}[A-Za-z]?|s/?n\b)"
                    r"(?:\s*,?\s*(?:apto?\.?|apartamento|casa|bloco|bl\.|sala|conj(?:unto)?\.?|lote)\s*[\w-]+)*",
      "<ADDRESS>"),
@@ -97,7 +105,7 @@ MASKS: list[tuple] = [
     # Name after a sign-off ("Att, Carlos").
     ("person_signoff", r"(?P<k>\b(?i:" + _SIGN_OFF + r")[,.!]?\s+)" + _NAME + r"(?=\s*(?:$|[\n.!]))",
      r"\g<k><PERSON>"),
-    ("person_subject", r"(?P<a>\b(?i:o|a|cliente|vendedor[a]?|comprador[a]?|atendente|usu[aá]ri[oa])\s+)" + _NAME + r"(?=\s+(?i:" + _HUMAN_VERBS + r")\b)", r"\g<a><PERSON>"),
+    ("person_subject", r"(?P<a>\b(?i:o|a|cliente|vendedor[a]?|comprador[a]?|atendente|usu[aá]ri[oa])\s+)" + _NOT_PRODUCT + _NAME + r"(?=\s+(?i:" + _HUMAN_VERBS + r")\b)", r"\g<a><PERSON>"),
     login_after_words(r"usu[aá]rio|login"),
     id_after_words(r"usu[aá]ri[oa]|cliente|loja|pedido|anunciante|participante|avalia[cç](?:[aã]o|[oõ]es)|ve[ií]culo"
                    r"|lote|leil[aã]o|vendedor|comprador|revenda|concession[aá]ria|empresa"),

@@ -1,5 +1,5 @@
 """text-sanitizer-br — Brazilian region for text-sanitizer-core: masks PII and secrets in free text."""
-__version__ = "0.3.2"
+__version__ = "0.4.0"
 
 from .sanitizer import DEFAULT_BLOCKS, DEFAULT_MASKS, MASKS, NER_MODEL, REGION, Report, Sanitizer, sanitize  # noqa: E402
 

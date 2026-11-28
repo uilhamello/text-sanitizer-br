@@ -17,14 +17,14 @@ este pacote já traz o core.
 ## Instalação
 
 ```bash
-pip install "text-sanitizer-br @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.3.2.zip"
+pip install "text-sanitizer-br @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.4.0.zip"
 ```
 
 Sem dependências. Para mascarar **nomes de pessoas**, instale o extra `ner` (spaCy + modelo
 `pt_core_news_sm` fixado por versão e hash; ~340 MB instalados, quase tudo spaCy e numpy):
 
 ```bash
-pip install "text-sanitizer-br[ner] @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.3.2.zip"
+pip install "text-sanitizer-br[ner] @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.4.0.zip"
 ```
 
 ## Uso
@@ -73,19 +73,21 @@ Mesmos 14 textos fictícios, Microsoft Presidio 2.2 com `pt_core_news_md`:
 | Tempo por texto | ~25 ms | ~0,06 ms (regex) · ~3 ms (com `ner`) |
 | Instalado | ~445 MB | ~0 · ~340 MB (com `ner`) |
 
-## Benchmark de vazamento (25/11/2026)
+## Benchmark de vazamento (28/11/2026)
 
 Dois conjuntos de textos fictícios em [`benchmark/`](benchmark/), rodados com `ner=True`
 (spaCy 3.8, `pt_core_news_sm` 3.8.0):
 
 | Conjunto | O que mede | Resultado |
 |---|---|---|
-| `leak.py` · 139 casos | segredo, documento, e-mail, IP, nome, loja, endereço e ID escritos de formas variadas | **0 vazamentos** |
-| `fp.py` · 80 textos | log, SQL, stack trace e métrica sem dado pessoal, que deveriam passar intactos | **30 alterados** |
+| `leak.py` · 165 casos | segredo, documento, e-mail, IP, nome, loja, endereço e ID escritos de formas variadas, mais 26 ataques às exceções de versão, hash, unidade e termo técnico | **0 vazamentos** |
+| `fp.py` · 80 textos | log, SQL, stack trace e métrica sem dado pessoal, que deveriam passar intactos | **6 alterados** |
 
-Quase todos os 30 vêm do modelo de nomes, que marca termos técnicos como pessoa (`Lock wait`,
-`SQLSTATE`, chave de Jira). O texto continua legível, mas perde contexto. Os casos foram escritos
-por quem escreveu as regras: um conjunto de outra pessoa provavelmente acha vazamentos novos.
+Os 6 que sobram são escolha, não descuido: ID depois de `id =`, `user` ou `pedido` (liga o texto a
+uma pessoa), razão social com `Ltda` e placa. Na v0.3, 4 vazamentos ficavam escondidos porque o
+modelo de nomes marcava o trecho como pessoa por acaso; hoje cada um tem regra própria. Os casos
+foram escritos por quem escreveu as regras: um conjunto de outra pessoa provavelmente acha
+vazamentos novos.
 
 ```bash
 PYTHONPATH=../text-sanitizer-core/src:src python benchmark/leak.py
