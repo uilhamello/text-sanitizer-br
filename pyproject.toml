@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 # Engine and country-independent rules. Pinned to a tag; archive URL installs without git.
-dependencies = ["text-sanitizer-core @ https://github.com/uilhamello/text-sanitizer-core/archive/refs/tags/v0.2.2.zip"]
+dependencies = ["text-sanitizer-core @ https://github.com/uilhamello/text-sanitizer-core/archive/refs/tags/v0.3.0.zip"]
 keywords = ["pii", "lgpd", "sanitizer", "masking", "secrets", "redaction"]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -21,7 +21,7 @@ classifiers = [
 [project.optional-dependencies]
 # Person names. Model pinned by version and hash (spaCy models are not on PyPI).
 ner = [
-    "text-sanitizer-core[ner] @ https://github.com/uilhamello/text-sanitizer-core/archive/refs/tags/v0.2.2.zip",
+    "text-sanitizer-core[ner] @ https://github.com/uilhamello/text-sanitizer-core/archive/refs/tags/v0.3.0.zip",
     "pt_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_sm-3.8.0/pt_core_news_sm-3.8.0-py3-none-any.whl#sha256=c304fa04db3af73cd08a250feacf560506e15a2ec2469bd1b09f06847f6b455c",
 ]
 
