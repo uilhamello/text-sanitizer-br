@@ -17,14 +17,14 @@ este pacote já traz o core.
 ## Instalação
 
 ```bash
-pip install "text-sanitizer-br @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.3.1.zip"
+pip install "text-sanitizer-br @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.3.2.zip"
 ```
 
 Sem dependências. Para mascarar **nomes de pessoas**, instale o extra `ner` (spaCy + modelo
 `pt_core_news_sm` fixado por versão e hash; ~340 MB instalados, quase tudo spaCy e numpy):
 
 ```bash
-pip install "text-sanitizer-br[ner] @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.3.1.zip"
+pip install "text-sanitizer-br[ner] @ https://github.com/uilhamello/text-sanitizer-br/archive/refs/tags/v0.3.2.zip"
 ```
 
 ## Uso

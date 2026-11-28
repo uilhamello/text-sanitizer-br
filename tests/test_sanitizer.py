@@ -18,6 +18,7 @@ class Masks(unittest.TestCase):
         ("senha=Hunter2 e password: 'x y'", "<SECRET>", "Hunter2"),
         ("Authorization: Bearer abcDEF123456789xyz", "<SECRET>", "abcDEF"),  # whole header since auth_header
         ("cookie SID=deadbeef1234", "<SECRET>", "deadbeef"),
+        ("SECRET_KEY='django-insecure-fake0a1b2c'", "<SECRET>", "fake0a1b2c"),  # _KEY suffix since core v0.2.2
         ("id_empresa=48213 e user_id: 77", "id_empresa=<N>", "48213"),
         ("req 3f2b8c1e-9a4d-4e6f-8b2a-1c3d5e7f9a0b", "<UUID>", "3f2b8c1e"),
         ("jwt eyJhbGciOiJIUzI1.eyJzdWIiOiIxMjM0.SflKxwRJSMeKKF2QT4", "<JWT>", "eyJhbGci"),
